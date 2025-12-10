@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Sign ↔ Speech Communication (Browser)</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <!-- Mediapipe JS -->
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Sign ↔ Speech Communication (Browser)</h1>
+
+    <div class="row">
+      <div class="column">
+        <h2>Sign → Text (Webcam)</h2>
+        <video id="input_video" autoplay playsinline></video>
+        <canvas id="output_canvas"></canvas>
+        <div class="prediction-box">
+          <span>Predicted Gesture:</span>
+          <strong id="prediction_text">-</strong>
+        </div>
+
+        <div style="margin-top:10px;">
+          <button id="speakPredictionBtn">🔊 Speak Prediction</button>
+        </div>
+      </div>
+
+      <div class="column">
+        <h2>Speech → Sign Animation (Microphone)</h2>
+        <p>Click <b>Speak</b>, say a word (hello / yes / no / thanks / A-Z), and browser will show sign.</p>
+        <button id="startSpeechBtn">🎤 Speak</button>
+        <div id="speechResult" style="margin-top:8px;color:#ffd700;"></div>
+
+        <div style="margin-top:16px;">
+          <img id="sign_gif" src="" alt="Sign animation" style="display:none; max-width:340px; border-radius:8px;"/>
+        </div>
+      </div>
+    </div>
+
+    <p class="note">Open console for debug logs (Ctrl+Shift+I).</p>
+  </div>
+
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
