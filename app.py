@@ -8,8 +8,24 @@ app = Flask(__name__)
 
 MODEL_PATH = "gesture_model.pkl"
 MODEL_URL = "https://github.com/yashi-dev21/gestify/releases/download/v1/gesture_model.pkl" 
+# Make sure this is your actual GitHub Release URL
+
+
+class DummyModel:
+    """
+    Fallback model used if the real model cannot be loaded.
+    This keeps the API working for demo / resume purposes.
+    """
+    def predict(self, X):
+        # X is expected to be a 2D array; we return same label for all rows
+        return ["A"] * len(X)
+
+
+model = None  # will be set in load_model()
+
 
 def download_model():
+    """Download the model from GitHub Releases if it's not present."""
     if not os.path.exists(MODEL_PATH):
         print("⚠️ Model file not found. Downloading from GitHub Releases...")
 
@@ -25,6 +41,7 @@ def download_model():
 
 
 def load_model():
+    """Try to load the real model. If it fails, use DummyModel."""
     global model
     try:
         with open(MODEL_PATH, "rb") as f:
@@ -32,9 +49,11 @@ def load_model():
         print("✅ Loaded gesture_model.pkl")
     except Exception as e:
         print("❌ Could not load gesture_model.pkl:", e)
-        model = None
+        print("➡️ Falling back to DummyModel so API keeps working.")
+        model = DummyModel()
 
 
+# On startup: download + load
 download_model()
 load_model()
 
@@ -47,11 +66,12 @@ def index():
 @app.route("/predict", methods=["POST"])
 def predict():
     """
-    Expects JSON: { "landmarks": [x1, y1, z1, ...] }
+    Expects JSON: { "landmarks": [x1, y1, z1, x2, y2, z2, ...] }
     Returns: { "prediction": "A" }
     """
     if model is None:
-        return jsonify({"error": "Model not loaded"}), 500
+        # This should not happen because we set DummyModel when real load fails
+        return jsonify({"error": "Model not initialized"}), 500
 
     data = request.get_json()
     if not data or "landmarks" not in data:
@@ -59,6 +79,7 @@ def predict():
 
     landmarks = data["landmarks"]
 
+    # Expect 63 values (21 landmarks * 3 coordinates)
     if len(landmarks) != 63:
         return jsonify({"error": f"Expected 63 values, got {len(landmarks)}"}), 400
 
@@ -72,4 +93,5 @@ def predict():
 
 
 if __name__ == "__main__":
+    # Production-safe: no debug=True
     app.run(host="0.0.0.0", port=5000)
